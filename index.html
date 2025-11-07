@@ -1,0 +1,1294 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DataLearn - Platform Pembelajaran Data Analytics</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .course-card {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .course-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+        }
+        .video-player {
+            aspect-ratio: 16/9;
+            background: #000;
+        }
+        .nav-active {
+            background: #3b82f6;
+            color: white;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .fade-in {
+            animation: fadeIn 0.5s ease;
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <div id="app"></div>
+
+    <script>
+        // State Management
+        const AppState = {
+            currentUser: null,
+            currentPage: 'home',
+            courses: [
+                {
+                    id: 1,
+                    title: 'SQL untuk Data Analytics',
+                    description: 'Master SQL dari dasar hingga advanced untuk analisis data',
+                    instructor: 'Dr. Ahmad Wijaya',
+                    price: 299000,
+                    duration: '8 minggu',
+                    level: 'Pemula - Menengah',
+                    rating: 4.8,
+                    students: 1234,
+                    image: 'https://images.unsplash.com/photo-1544383835-bda2bc66a55d?w=400&h=250&fit=crop',
+                    modules: [
+                        { id: 1, title: 'Pengenalan SQL & Database', duration: '45 menit', completed: false, type: 'video', content: 'https://example.com/video1' },
+                        { id: 2, title: 'SELECT Statement & Filtering', duration: '60 menit', completed: false, type: 'video', content: 'https://example.com/video2' },
+                        { id: 3, title: 'JOIN Operations', duration: '55 menit', completed: false, type: 'video', content: 'https://example.com/video3' },
+                        { id: 4, title: 'Aggregate Functions', duration: '50 menit', completed: false, type: 'quiz', questions: 10 }
+                    ],
+                    category: 'SQL',
+                    features: ['Video HD', 'Quiz Interaktif', 'Sertifikat', 'Materi PDF']
+                },
+                {
+                    id: 2,
+                    title: 'Tableau Fundamental',
+                    description: 'Buat visualisasi data yang menarik dengan Tableau',
+                    instructor: 'Sarah Lestari',
+                    price: 399000,
+                    duration: '6 minggu',
+                    level: 'Pemula',
+                    rating: 4.9,
+                    students: 987,
+                    image: 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=400&h=250&fit=crop',
+                    modules: [
+                        { id: 1, title: 'Tableau Interface & Basics', duration: '40 menit', completed: false, type: 'video' },
+                        { id: 2, title: 'Data Connection', duration: '35 menit', completed: false, type: 'video' },
+                        { id: 3, title: 'Creating Visualizations', duration: '60 menit', completed: false, type: 'video' },
+                        { id: 4, title: 'Dashboard Design', duration: '70 menit', completed: false, type: 'video' }
+                    ],
+                    category: 'Tableau',
+                    features: ['Video HD', 'Project Real', 'Sertifikat', 'Support 24/7']
+                },
+                {
+                    id: 3,
+                    title: 'Power BI untuk Business Intelligence',
+                    description: 'Transform data menjadi insight dengan Power BI',
+                    instructor: 'Budi Santoso',
+                    price: 449000,
+                    duration: '10 minggu',
+                    level: 'Menengah',
+                    rating: 4.7,
+                    students: 756,
+                    image: 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=400&h=250&fit=crop',
+                    modules: [
+                        { id: 1, title: 'Power BI Desktop Introduction', duration: '45 menit', completed: false, type: 'video' },
+                        { id: 2, title: 'Power Query Editor', duration: '55 menit', completed: false, type: 'video' },
+                        { id: 3, title: 'DAX Fundamentals', duration: '65 menit', completed: false, type: 'video' },
+                        { id: 4, title: 'Advanced DAX', duration: '75 menit', completed: false, type: 'video' }
+                    ],
+                    category: 'Power BI',
+                    features: ['Video 4K', 'Real Projects', 'Sertifikat', 'Lifetime Access']
+                }
+            ],
+            subscriptionPlans: [
+                { id: 1, name: 'Bulanan', price: 199000, duration: '1 bulan', features: ['Akses semua kursus', '1 private session', 'Sertifikat'] },
+                { id: 2, name: 'Tahunan', price: 1990000, duration: '12 bulan', features: ['Akses semua kursus', '12 private sessions', 'Sertifikat', 'Priority support'], discount: '17% OFF' },
+                { id: 3, name: 'All-Access Lifetime', price: 3999000, duration: 'Selamanya', features: ['Akses semua kursus', 'Unlimited private sessions', 'Sertifikat', 'VIP support'], popular: true }
+            ],
+            userCourses: [],
+            certificates: [],
+            privateSessions: [],
+            orders: []
+        };
+
+        // Initialize demo data
+        function initDemoData() {
+            const savedUser = localStorage.getItem('currentUser');
+            if (savedUser) {
+                AppState.currentUser = JSON.parse(savedUser);
+                loadUserData();
+            }
+        }
+
+        function loadUserData() {
+            const userId = AppState.currentUser?.id;
+            AppState.userCourses = JSON.parse(localStorage.getItem(`userCourses_${userId}`) || '[]');
+            AppState.certificates = JSON.parse(localStorage.getItem(`certificates_${userId}`) || '[]');
+            AppState.privateSessions = JSON.parse(localStorage.getItem(`sessions_${userId}`) || '[]');
+            AppState.orders = JSON.parse(localStorage.getItem(`orders_${userId}`) || '[]');
+        }
+
+        function saveUserData() {
+            const userId = AppState.currentUser?.id;
+            localStorage.setItem(`userCourses_${userId}`, JSON.stringify(AppState.userCourses));
+            localStorage.setItem(`certificates_${userId}`, JSON.stringify(AppState.certificates));
+            localStorage.setItem(`sessions_${userId}`, JSON.stringify(AppState.privateSessions));
+            localStorage.setItem(`orders_${userId}`, JSON.stringify(AppState.orders));
+        }
+
+        // Authentication
+        function register(email, password, name) {
+            const users = JSON.parse(localStorage.getItem('users') || '[]');
+            if (users.find(u => u.email === email)) {
+                alert('Email sudah terdaftar!');
+                return false;
+            }
+            const user = { id: Date.now(), email, password, name, role: 'student', verified: true };
+            users.push(user);
+            localStorage.setItem('users', JSON.stringify(users));
+            return login(email, password);
+        }
+
+        function login(email, password) {
+            const users = JSON.parse(localStorage.getItem('users') || '[]');
+            const user = users.find(u => u.email === email && u.password === password);
+            if (user) {
+                AppState.currentUser = user;
+                localStorage.setItem('currentUser', JSON.stringify(user));
+                loadUserData();
+                navigateTo('dashboard');
+                return true;
+            }
+            alert('Email atau password salah!');
+            return false;
+        }
+
+        function logout() {
+            AppState.currentUser = null;
+            localStorage.removeItem('currentUser');
+            navigateTo('home');
+        }
+
+        // Navigation
+        function navigateTo(page, data = null) {
+            AppState.currentPage = page;
+            AppState.pageData = data;
+            render();
+        }
+
+        // Course Management
+        function enrollCourse(courseId) {
+            if (!AppState.currentUser) {
+                navigateTo('login');
+                return;
+            }
+            const course = AppState.courses.find(c => c.id === courseId);
+            navigateTo('checkout', { type: 'course', item: course });
+        }
+
+        function subscribeplan(planId) {
+            if (!AppState.currentUser) {
+                navigateTo('login');
+                return;
+            }
+            const plan = AppState.subscriptionPlans.find(p => p.id === planId);
+            navigateTo('checkout', { type: 'subscription', item: plan });
+        }
+
+        function processPayment(paymentData) {
+            const order = {
+                id: Date.now(),
+                userId: AppState.currentUser.id,
+                ...paymentData,
+                status: 'pending',
+                date: new Date().toISOString()
+            };
+            AppState.orders.push(order);
+            saveUserData();
+            
+            // Simulate payment verification after 2 seconds
+            setTimeout(() => {
+                order.status = 'paid';
+                if (paymentData.type === 'course') {
+                    AppState.userCourses.push({
+                        ...paymentData.item,
+                        enrolledAt: new Date().toISOString(),
+                        progress: 0
+                    });
+                }
+                saveUserData();
+                alert('Pembayaran berhasil! Anda sekarang dapat mengakses kursus.');
+                navigateTo('dashboard');
+            }, 2000);
+        }
+
+        function updateProgress(courseId, moduleId) {
+            const course = AppState.userCourses.find(c => c.id === courseId);
+            if (!course) return;
+            
+            const module = course.modules.find(m => m.id === moduleId);
+            if (module) {
+                module.completed = true;
+                const completedModules = course.modules.filter(m => m.completed).length;
+                course.progress = Math.round((completedModules / course.modules.length) * 100);
+                
+                // Check if course completed
+                if (course.progress === 100 && !AppState.certificates.find(c => c.courseId === courseId)) {
+                    generateCertificate(courseId);
+                }
+                
+                saveUserData();
+                render();
+            }
+        }
+
+        function generateCertificate(courseId) {
+            const course = AppState.courses.find(c => c.id === courseId);
+            const certificate = {
+                id: Date.now(),
+                courseId,
+                courseName: course.title,
+                studentName: AppState.currentUser.name,
+                issueDate: new Date().toISOString(),
+                certificateNumber: `CERT-${Date.now()}-${Math.random().toString(36).substr(2, 9).toUpperCase()}`,
+                hash: Math.random().toString(36).substr(2, 16)
+            };
+            AppState.certificates.push(certificate);
+            saveUserData();
+            alert('Selamat! Sertifikat Anda telah dibuat.');
+        }
+
+        function bookPrivateSession(date, time, topic) {
+            const session = {
+                id: Date.now(),
+                userId: AppState.currentUser.id,
+                date,
+                time,
+                topic,
+                status: 'scheduled',
+                zoomLink: `https://zoom.us/j/${Math.floor(Math.random() * 1000000000)}`
+            };
+            AppState.privateSessions.push(session);
+            saveUserData();
+            alert('Sesi private berhasil dibooking! Link Zoom akan dikirim via email.');
+            navigateTo('dashboard');
+        }
+
+        // Components
+        function Navbar() {
+            return `
+                <nav class="bg-white shadow-lg sticky top-0 z-50">
+                    <div class="container mx-auto px-4">
+                        <div class="flex justify-between items-center py-4">
+                            <div class="flex items-center space-x-2 cursor-pointer" onclick="navigateTo('home')">
+                                <i class="fas fa-graduation-cap text-3xl text-blue-600"></i>
+                                <span class="text-2xl font-bold text-gray-800">DataLearn</span>
+                            </div>
+                            <div class="hidden md:flex space-x-6">
+                                <a onclick="navigateTo('home')" class="cursor-pointer hover:text-blue-600 ${AppState.currentPage === 'home' ? 'text-blue-600 font-semibold' : 'text-gray-600'}">Beranda</a>
+                                <a onclick="navigateTo('courses')" class="cursor-pointer hover:text-blue-600 ${AppState.currentPage === 'courses' ? 'text-blue-600 font-semibold' : 'text-gray-600'}">Kursus</a>
+                                <a onclick="navigateTo('pricing')" class="cursor-pointer hover:text-blue-600 ${AppState.currentPage === 'pricing' ? 'text-blue-600 font-semibold' : 'text-gray-600'}">Harga</a>
+                                ${AppState.currentUser?.role === 'admin' ? '<a onclick="navigateTo(\'admin\')" class="cursor-pointer hover:text-blue-600 text-gray-600">Admin</a>' : ''}
+                            </div>
+                            <div class="flex items-center space-x-4">
+                                ${AppState.currentUser ? `
+                                    <button onclick="navigateTo('dashboard')" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
+                                        <i class="fas fa-user mr-2"></i>Dashboard
+                                    </button>
+                                    <button onclick="logout()" class="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-100 transition">
+                                        <i class="fas fa-sign-out-alt mr-2"></i>Keluar
+                                    </button>
+                                ` : `
+                                    <button onclick="navigateTo('login')" class="px-4 py-2 text-blue-600 hover:text-blue-700">Masuk</button>
+                                    <button onclick="navigateTo('register')" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">Daftar</button>
+                                `}
+                            </div>
+                        </div>
+                    </div>
+                </nav>
+            `;
+        }
+
+        function HomePage() {
+            return `
+                ${Navbar()}
+                <div class="fade-in">
+                    <!-- Hero Section -->
+                    <div class="bg-gradient-to-r from-blue-600 to-purple-600 text-white py-20">
+                        <div class="container mx-auto px-4 text-center">
+                            <h1 class="text-5xl font-bold mb-6">Kuasai Data Analytics</h1>
+                            <p class="text-xl mb-8 max-w-2xl mx-auto">Pelajari SQL, Tableau, dan Power BI dari para ahli. Dapatkan sertifikat profesional dan tingkatkan karir Anda.</p>
+                            <div class="flex justify-center space-x-4">
+                                <button onclick="navigateTo('courses')" class="px-8 py-3 bg-white text-blue-600 rounded-lg font-semibold hover:bg-gray-100 transition">
+                                    Mulai Belajar
+                                </button>
+                                <button onclick="navigateTo('pricing')" class="px-8 py-3 border-2 border-white text-white rounded-lg font-semibold hover:bg-white hover:text-blue-600 transition">
+                                    Lihat Harga
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Stats Section -->
+                    <div class="bg-white py-12">
+                        <div class="container mx-auto px-4">
+                            <div class="grid grid-cols-1 md:grid-cols-4 gap-8 text-center">
+                                <div>
+                                    <div class="text-4xl font-bold text-blue-600 mb-2">5000+</div>
+                                    <div class="text-gray-600">Siswa Aktif</div>
+                                </div>
+                                <div>
+                                    <div class="text-4xl font-bold text-blue-600 mb-2">50+</div>
+                                    <div class="text-gray-600">Kursus Premium</div>
+                                </div>
+                                <div>
+                                    <div class="text-4xl font-bold text-blue-600 mb-2">98%</div>
+                                    <div class="text-gray-600">Tingkat Kepuasan</div>
+                                </div>
+                                <div>
+                                    <div class="text-4xl font-bold text-blue-600 mb-2">24/7</div>
+                                    <div class="text-gray-600">Support</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Featured Courses -->
+                    <div class="py-16 bg-gray-50">
+                        <div class="container mx-auto px-4">
+                            <h2 class="text-3xl font-bold text-center mb-12">Kursus Populer</h2>
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                                ${AppState.courses.map(course => `
+                                    <div class="course-card bg-white rounded-lg shadow-lg overflow-hidden cursor-pointer" onclick="navigateTo('courseDetail', ${course.id})">
+                                        <img src="${course.image}" alt="${course.title}" class="w-full h-48 object-cover">
+                                        <div class="p-6">
+                                            <div class="flex items-center justify-between mb-2">
+                                                <span class="text-sm bg-blue-100 text-blue-600 px-3 py-1 rounded-full">${course.category}</span>
+                                                <div class="flex items-center">
+                                                    <i class="fas fa-star text-yellow-400 mr-1"></i>
+                                                    <span class="font-semibold">${course.rating}</span>
+                                                </div>
+                                            </div>
+                                            <h3 class="text-xl font-bold mb-2">${course.title}</h3>
+                                            <p class="text-gray-600 mb-4">${course.description}</p>
+                                            <div class="flex items-center text-sm text-gray-500 mb-4">
+                                                <i class="fas fa-user-graduate mr-2"></i>
+                                                <span>${course.students} siswa</span>
+                                                <span class="mx-2">•</span>
+                                                <i class="fas fa-clock mr-2"></i>
+                                                <span>${course.duration}</span>
+                                            </div>
+                                            <div class="flex items-center justify-between">
+                                                <span class="text-2xl font-bold text-blue-600">Rp ${course.price.toLocaleString('id-ID')}</span>
+                                                <button onclick="event.stopPropagation(); enrollCourse(${course.id})" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
+                                                    Daftar
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Features Section -->
+                    <div class="py-16 bg-white">
+                        <div class="container mx-auto px-4">
+                            <h2 class="text-3xl font-bold text-center mb-12">Mengapa Pilih DataLearn?</h2>
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                                <div class="text-center p-6">
+                                    <i class="fas fa-video text-5xl text-blue-600 mb-4"></i>
+                                    <h3 class="text-xl font-bold mb-2">Video Berkualitas HD</h3>
+                                    <p class="text-gray-600">Materi video dengan kualitas tinggi dan penjelasan yang mudah dipahami</p>
+                                </div>
+                                <div class="text-center p-6">
+                                    <i class="fas fa-certificate text-5xl text-blue-600 mb-4"></i>
+                                    <h3 class="text-xl font-bold mb-2">Sertifikat Profesional</h3>
+                                    <p class="text-gray-600">Dapatkan sertifikat terverifikasi setelah menyelesaikan kursus</p>
+                                </div>
+                                <div class="text-center p-6">
+                                    <i class="fas fa-users text-5xl text-blue-600 mb-4"></i>
+                                    <h3 class="text-xl font-bold mb-2">Sesi Private 1-on-1</h3>
+                                    <p class="text-gray-600">Belajar langsung dengan mentor melalui Zoom</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function CoursesPage() {
+            return `
+                ${Navbar()}
+                <div class="container mx-auto px-4 py-12 fade-in">
+                    <h1 class="text-4xl font-bold mb-8">Semua Kursus</h1>
+                    <div class="flex gap-4 mb-8">
+                        <button class="px-4 py-2 bg-blue-600 text-white rounded-lg">Semua</button>
+                        <button class="px-4 py-2 bg-gray-200 rounded-lg hover:bg-gray-300">SQL</button>
+                        <button class="px-4 py-2 bg-gray-200 rounded-lg hover:bg-gray-300">Tableau</button>
+                        <button class="px-4 py-2 bg-gray-200 rounded-lg hover:bg-gray-300">Power BI</button>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                        ${AppState.courses.map(course => `
+                            <div class="course-card bg-white rounded-lg shadow-lg overflow-hidden cursor-pointer" onclick="navigateTo('courseDetail', ${course.id})">
+                                <img src="${course.image}" alt="${course.title}" class="w-full h-48 object-cover">
+                                <div class="p-6">
+                                    <div class="flex items-center justify-between mb-2">
+                                        <span class="text-sm bg-blue-100 text-blue-600 px-3 py-1 rounded-full">${course.category}</span>
+                                        <div class="flex items-center">
+                                            <i class="fas fa-star text-yellow-400 mr-1"></i>
+                                            <span class="font-semibold">${course.rating}</span>
+                                        </div>
+                                    </div>
+                                    <h3 class="text-xl font-bold mb-2">${course.title}</h3>
+                                    <p class="text-gray-600 mb-4">${course.description}</p>
+                                    <div class="flex items-center text-sm text-gray-500 mb-4">
+                                        <i class="fas fa-signal mr-2"></i>
+                                        <span>${course.level}</span>
+                                        <span class="mx-2">•</span>
+                                        <i class="fas fa-clock mr-2"></i>
+                                        <span>${course.duration}</span>
+                                    </div>
+                                    <div class="flex items-center justify-between">
+                                        <span class="text-2xl font-bold text-blue-600">Rp ${course.price.toLocaleString('id-ID')}</span>
+                                        <button onclick="event.stopPropagation(); enrollCourse(${course.id})" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
+                                            Daftar
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+        }
+
+        function CourseDetailPage(courseId) {
+            const course = AppState.courses.find(c => c.id === courseId);
+            const userCourse = AppState.userCourses.find(c => c.id === courseId);
+            const isEnrolled = !!userCourse;
+
+            return `
+                ${Navbar()}
+                <div class="container mx-auto px-4 py-12 fade-in">
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                        <div class="lg:col-span-2">
+                            <img src="${course.image}" alt="${course.title}" class="w-full rounded-lg shadow-lg mb-6">
+                            <h1 class="text-4xl font-bold mb-4">${course.title}</h1>
+                            <p class="text-xl text-gray-600 mb-6">${course.description}</p>
+                            
+                            <div class="flex items-center mb-6 space-x-6">
+                                <div class="flex items-center">
+                                    <i class="fas fa-star text-yellow-400 mr-2"></i>
+                                    <span class="font-semibold text-lg">${course.rating}</span>
+                                    <span class="text-gray-500 ml-2">(${course.students} siswa)</span>
+                                </div>
+                                <div class="flex items-center">
+                                    <i class="fas fa-user-tie text-blue-600 mr-2"></i>
+                                    <span>${course.instructor}</span>
+                                </div>
+                            </div>
+
+                            <div class="bg-white rounded-lg shadow p-6 mb-6">
+                                <h2 class="text-2xl font-bold mb-4">Yang Akan Anda Pelajari</h2>
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    ${course.features.map(feature => `
+                                        <div class="flex items-start">
+                                            <i class="fas fa-check-circle text-green-500 mr-3 mt-1"></i>
+                                            <span>${feature}</span>
+                                        </div>
+                                    `).join('')}
+                                </div>
+                            </div>
+
+                            <div class="bg-white rounded-lg shadow p-6">
+                                <h2 class="text-2xl font-bold mb-4">Kurikulum Kursus</h2>
+                                <div class="space-y-3">
+                                    ${course.modules.map((module, idx) => `
+                                        <div class="border rounded-lg p-4 ${isEnrolled ? 'cursor-pointer hover:bg-gray-50' : ''}" ${isEnrolled ? `onclick="navigateTo('learn', {courseId: ${courseId}, moduleId: ${module.id}})"` : ''}>
+                                            <div class="flex items-center justify-between">
+                                                <div class="flex items-center">
+                                                    ${module.completed ? '<i class="fas fa-check-circle text-green-500 mr-3"></i>' : `<span class="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center mr-3 text-sm">${idx + 1}</span>`}
+                                                    <div>
+                                                        <h3 class="font-semibold">${module.title}</h3>
+                                                        <span class="text-sm text-gray-500">
+                                                            <i class="fas fa-${module.type === 'video' ? 'play-circle' : 'question-circle'} mr-1"></i>
+                                                            ${module.duration || `${module.questions} pertanyaan`}
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                                ${!isEnrolled ? '<i class="fas fa-lock text-gray-400"></i>' : ''}
+                                            </div>
+                                        </div>
+                                    `).join('')}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="lg:col-span-1">
+                            <div class="bg-white rounded-lg shadow-lg p-6 sticky top-24">
+                                ${isEnrolled ? `
+                                    <div class="mb-6">
+                                        <div class="flex justify-between mb-2">
+                                            <span class="font-semibold">Progress</span>
+                                            <span class="font-semibold text-blue-600">${userCourse.progress}%</span>
+                                        </div>
+                                        <div class="w-full bg-gray-200 rounded-full h-3">
+                                            <div class="bg-blue-600 h-3 rounded-full" style="width: ${userCourse.progress}%"></div>
+                                        </div>
+                                    </div>
+                                    <button onclick="navigateTo('learn', {courseId: ${courseId}, moduleId: ${course.modules[0].id}})" class="w-full py-3 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition mb-3">
+                                        <i class="fas fa-play mr-2"></i>Lanjutkan Belajar
+                                    </button>
+                                ` : `
+                                    <div class="text-center mb-6">
+                                        <div class="text-4xl font-bold text-blue-600 mb-2">Rp ${course.price.toLocaleString('id-ID')}</div>
+                                        <div class="text-gray-500">One-time payment</div>
+                                    </div>
+                                    <button onclick="enrollCourse(${courseId})" class="w-full py-3 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition mb-3">
+                                        <i class="fas fa-shopping-cart mr-2"></i>Daftar Sekarang
+                                    </button>
+                                `}
+                                
+                                <div class="border-t pt-4 mt-4">
+                                    <h3 class="font-bold mb-3">Termasuk:</h3>
+                                    <ul class="space-y-2 text-sm">
+                                        <li><i class="fas fa-infinity text-blue-600 mr-2"></i>Akses selamanya</li>
+                                        <li><i class="fas fa-mobile-alt text-blue-600 mr-2"></i>Akses di mobile & desktop</li>
+                                        <li><i class="fas fa-certificate text-blue-600 mr-2"></i>Sertifikat penyelesaian</li>
+                                        <li><i class="fas fa-download text-blue-600 mr-2"></i>Materi dapat diunduh</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function LearningPage(data) {
+            const course = AppState.userCourses.find(c => c.id === data.courseId);
+            const module = course.modules.find(m => m.id === data.moduleId);
+            const moduleIndex = course.modules.findIndex(m => m.id === data.moduleId);
+
+            return `
+                ${Navbar()}
+                <div class="flex h-screen">
+                    <!-- Sidebar -->
+                    <div class="w-80 bg-white border-r overflow-y-auto">
+                        <div class="p-4 border-b">
+                            <h2 class="font-bold text-lg mb-2">${course.title}</h2>
+                            <div class="w-full bg-gray-200 rounded-full h-2">
+                                <div class="bg-blue-600 h-2 rounded-full" style="width: ${course.progress}%"></div>
+                            </div>
+                            <span class="text-sm text-gray-600">${course.progress}% selesai</span>
+                        </div>
+                        <div class="p-4">
+                            ${course.modules.map((m, idx) => `
+                                <div class="mb-2 p-3 rounded-lg cursor-pointer ${m.id === module.id ? 'bg-blue-100 border-l-4 border-blue-600' : 'hover:bg-gray-50'}" onclick="navigateTo('learn', {courseId: ${data.courseId}, moduleId: ${m.id}})">
+                                    <div class="flex items-center justify-between">
+                                        <div class="flex items-center">
+                                            ${m.completed ? '<i class="fas fa-check-circle text-green-500 mr-2"></i>' : `<span class="text-gray-400 mr-2">${idx + 1}</span>`}
+                                            <span class="text-sm ${m.id === module.id ? 'font-semibold' : ''}">${m.title}</span>
+                                        </div>
+                                        ${m.id === module.id ? '<i class="fas fa-play-circle text-blue-600"></i>' : ''}
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+
+                    <!-- Content Area -->
+                    <div class="flex-1 overflow-y-auto bg-gray-50">
+                        <div class="max-w-5xl mx-auto p-8">
+                            ${module.type === 'video' ? `
+                                <div class="bg-black video-player rounded-lg mb-6 flex items-center justify-center">
+                                    <div class="text-white text-center">
+                                        <i class="fas fa-play-circle text-6xl mb-4"></i>
+                                        <p class="text-xl">Video Player</p>
+                                        <p class="text-sm text-gray-400 mt-2">${module.title}</p>
+                                    </div>
+                                </div>
+                            ` : `
+                                <div class="bg-white rounded-lg shadow p-8 mb-6">
+                                    <h2 class="text-2xl font-bold mb-6">Quiz: ${module.title}</h2>
+                                    <div class="space-y-6">
+                                        ${Array.from({length: module.questions}, (_, i) => `
+                                            <div class="border-b pb-4">
+                                                <p class="font-semibold mb-3">${i + 1}. Contoh pertanyaan quiz tentang ${course.title}?</p>
+                                                <div class="space-y-2">
+                                                    <label class="flex items-center space-x-2 cursor-pointer">
+                                                        <input type="radio" name="q${i}" class="form-radio text-blue-600">
+                                                        <span>Opsi A</span>
+                                                    </label>
+                                                    <label class="flex items-center space-x-2 cursor-pointer">
+                                                        <input type="radio" name="q${i}" class="form-radio text-blue-600">
+                                                        <span>Opsi B</span>
+                                                    </label>
+                                                    <label class="flex items-center space-x-2 cursor-pointer">
+                                                        <input type="radio" name="q${i}" class="form-radio text-blue-600">
+                                                        <span>Opsi C</span>
+                                                    </label>
+                                                </div>
+                                            </div>
+                                        `).join('')}
+                                    </div>
+                                </div>
+                            `}
+
+                            <div class="bg-white rounded-lg shadow p-6">
+                                <h3 class="text-xl font-bold mb-4">${module.title}</h3>
+                                <p class="text-gray-600 mb-6">Materi pembelajaran untuk modul ini. Di sini akan berisi penjelasan detail, contoh kode, dan latihan praktis.</p>
+                                
+                                <div class="flex justify-between items-center">
+                                    ${moduleIndex > 0 ? `
+                                        <button onclick="navigateTo('learn', {courseId: ${data.courseId}, moduleId: ${course.modules[moduleIndex - 1].id}})" class="px-6 py-2 border border-gray-300 rounded-lg hover:bg-gray-50">
+                                            <i class="fas fa-arrow-left mr-2"></i>Sebelumnya
+                                        </button>
+                                    ` : '<div></div>'}
+                                    
+                                    ${!module.completed ? `
+                                        <button onclick="updateProgress(${data.courseId}, ${data.moduleId})" class="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
+                                            <i class="fas fa-check mr-2"></i>Tandai Selesai
+                                        </button>
+                                    ` : '<span class="text-green-600 font-semibold"><i class="fas fa-check-circle mr-2"></i>Selesai</span>'}
+                                    
+                                    ${moduleIndex < course.modules.length - 1 ? `
+                                        <button onclick="navigateTo('learn', {courseId: ${data.courseId}, moduleId: ${course.modules[moduleIndex + 1].id}})" class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+                                            Selanjutnya<i class="fas fa-arrow-right ml-2"></i>
+                                        </button>
+                                    ` : '<div></div>'}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function PricingPage() {
+            return `
+                ${Navbar()}
+                <div class="container mx-auto px-4 py-12 fade-in">
+                    <h1 class="text-4xl font-bold text-center mb-4">Pilih Paket Anda</h1>
+                    <p class="text-xl text-gray-600 text-center mb-12">Investasi terbaik untuk masa depan karir Anda</p>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+                        ${AppState.subscriptionPlans.map(plan => `
+                            <div class="bg-white rounded-lg shadow-xl overflow-hidden ${plan.popular ? 'ring-4 ring-blue-600 transform scale-105' : ''}">
+                                ${plan.popular ? '<div class="bg-blue-600 text-white text-center py-2 font-semibold">PALING POPULER</div>' : ''}
+                                ${plan.discount ? '<div class="bg-green-600 text-white text-center py-2 font-semibold">' + plan.discount + '</div>' : ''}
+                                <div class="p-8">
+                                    <h3 class="text-2xl font-bold mb-2">${plan.name}</h3>
+                                    <div class="mb-6">
+                                        <span class="text-4xl font-bold">Rp ${plan.price.toLocaleString('id-ID')}</span>
+                                        <span class="text-gray-600">/${plan.duration}</span>
+                                    </div>
+                                    <ul class="space-y-3 mb-8">
+                                        ${plan.features.map(feature => `
+                                            <li class="flex items-start">
+                                                <i class="fas fa-check text-green-500 mr-3 mt-1"></i>
+                                                <span>${feature}</span>
+                                            </li>
+                                        `).join('')}
+                                    </ul>
+                                    <button onclick="subscribeplan(${plan.id})" class="w-full py-3 ${plan.popular ? 'bg-blue-600 hover:bg-blue-700' : 'bg-gray-800 hover:bg-gray-900'} text-white rounded-lg font-semibold transition">
+                                        Pilih Paket
+                                    </button>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+
+                    <div class="mt-16 text-center">
+                        <h2 class="text-2xl font-bold mb-4">Atau pilih kursus individual</h2>
+                        <button onclick="navigateTo('courses')" class="px-8 py-3 border-2 border-blue-600 text-blue-600 rounded-lg font-semibold hover:bg-blue-600 hover:text-white transition">
+                            Lihat Semua Kursus
+                        </button>
+                    </div>
+                </div>
+            `;
+        }
+
+        function CheckoutPage(data) {
+            const { type, item } = data;
+            return `
+                ${Navbar()}
+                <div class="container mx-auto px-4 py-12 max-w-4xl fade-in">
+                    <h1 class="text-3xl font-bold mb-8">Checkout</h1>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <div>
+                            <div class="bg-white rounded-lg shadow p-6 mb-6">
+                                <h2 class="text-xl font-bold mb-4">Detail Pembelian</h2>
+                                <div class="border-b pb-4 mb-4">
+                                    <h3 class="font-semibold">${item.title || item.name}</h3>
+                                    <p class="text-gray-600 text-sm">${type === 'course' ? 'Kursus' : 'Subscription'}</p>
+                                </div>
+                                <div class="flex justify-between items-center text-2xl font-bold">
+                                    <span>Total:</span>
+                                    <span class="text-blue-600">Rp ${item.price.toLocaleString('id-ID')}</span>
+                                </div>
+                            </div>
+
+                            <div class="bg-white rounded-lg shadow p-6">
+                                <h2 class="text-xl font-bold mb-4">Metode Pembayaran</h2>
+                                <div class="space-y-3">
+                                    <label class="flex items-center p-4 border rounded-lg cursor-pointer hover:bg-gray-50">
+                                        <input type="radio" name="payment" value="qris" checked class="mr-3">
+                                        <i class="fas fa-qrcode text-2xl mr-3 text-blue-600"></i>
+                                        <span class="font-semibold">QRIS</span>
+                                    </label>
+                                    <label class="flex items-center p-4 border rounded-lg cursor-pointer hover:bg-gray-50">
+                                        <input type="radio" name="payment" value="dana" class="mr-3">
+                                        <i class="fas fa-mobile-alt text-2xl mr-3 text-blue-600"></i>
+                                        <span class="font-semibold">DANA</span>
+                                    </label>
+                                    <label class="flex items-center p-4 border rounded-lg cursor-pointer hover:bg-gray-50">
+                                        <input type="radio" name="payment" value="ovo" class="mr-3">
+                                        <i class="fas fa-wallet text-2xl mr-3 text-blue-600"></i>
+                                        <span class="font-semibold">OVO</span>
+                                    </label>
+                                    <label class="flex items-center p-4 border rounded-lg cursor-pointer hover:bg-gray-50">
+                                        <input type="radio" name="payment" value="bank" class="mr-3">
+                                        <i class="fas fa-university text-2xl mr-3 text-blue-600"></i>
+                                        <span class="font-semibold">Transfer Bank</span>
+                                    </label>
+                                    <label class="flex items-center p-4 border rounded-lg cursor-pointer hover:bg-gray-50">
+                                        <input type="radio" name="payment" value="paypal" class="mr-3">
+                                        <i class="fab fa-paypal text-2xl mr-3 text-blue-600"></i>
+                                        <span class="font-semibold">PayPal</span>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div>
+                            <div class="bg-white rounded-lg shadow p-6 sticky top-24">
+                                <h2 class="text-xl font-bold mb-4">Ringkasan Pembayaran</h2>
+                                <div class="space-y-3 mb-6">
+                                    <div class="flex justify-between">
+                                        <span>Subtotal</span>
+                                        <span>Rp ${item.price.toLocaleString('id-ID')}</span>
+                                    </div>
+                                    <div class="flex justify-between text-green-600">
+                                        <span>Diskon</span>
+                                        <span>Rp 0</span>
+                                    </div>
+                                    <div class="border-t pt-3 flex justify-between text-xl font-bold">
+                                        <span>Total</span>
+                                        <span class="text-blue-600">Rp ${item.price.toLocaleString('id-ID')}</span>
+                                    </div>
+                                </div>
+                                <button onclick="processPayment({type: '${type}', item: ${JSON.stringify(item).replace(/"/g, '&quot;')}, method: document.querySelector('input[name=payment]:checked').value})" class="w-full py-3 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition mb-3">
+                                    <i class="fas fa-lock mr-2"></i>Bayar Sekarang
+                                </button>
+                                <p class="text-center text-xs text-gray-500">Pembayaran aman dengan enkripsi SSL</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function DashboardPage() {
+            return `
+                ${Navbar()}
+                <div class="container mx-auto px-4 py-12 fade-in">
+                    <div class="mb-8">
+                        <h1 class="text-4xl font-bold mb-2">Selamat datang, ${AppState.currentUser.name}!</h1>
+                        <p class="text-gray-600">Lanjutkan perjalanan belajar Anda</p>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+                        <div class="bg-white rounded-lg shadow p-6">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-gray-600 mb-1">Kursus Aktif</p>
+                                    <p class="text-3xl font-bold text-blue-600">${AppState.userCourses.length}</p>
+                                </div>
+                                <i class="fas fa-book text-4xl text-blue-600 opacity-20"></i>
+                            </div>
+                        </div>
+                        <div class="bg-white rounded-lg shadow p-6">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-gray-600 mb-1">Selesai</p>
+                                    <p class="text-3xl font-bold text-green-600">${AppState.userCourses.filter(c => c.progress === 100).length}</p>
+                                </div>
+                                <i class="fas fa-check-circle text-4xl text-green-600 opacity-20"></i>
+                            </div>
+                        </div>
+                        <div class="bg-white rounded-lg shadow p-6">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-gray-600 mb-1">Sertifikat</p>
+                                    <p class="text-3xl font-bold text-purple-600">${AppState.certificates.length}</p>
+                                </div>
+                                <i class="fas fa-certificate text-4xl text-purple-600 opacity-20"></i>
+                            </div>
+                        </div>
+                        <div class="bg-white rounded-lg shadow p-6">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-gray-600 mb-1">Sesi Private</p>
+                                    <p class="text-3xl font-bold text-orange-600">${AppState.privateSessions.length}</p>
+                                </div>
+                                <i class="fas fa-video text-4xl text-orange-600 opacity-20"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                        <div class="lg:col-span-2">
+                            <h2 class="text-2xl font-bold mb-6">Kursus Saya</h2>
+                            ${AppState.userCourses.length === 0 ? `
+                                <div class="bg-white rounded-lg shadow p-12 text-center">
+                                    <i class="fas fa-book-open text-6xl text-gray-300 mb-4"></i>
+                                    <h3 class="text-xl font-semibold mb-2">Belum ada kursus</h3>
+                                    <p class="text-gray-600 mb-6">Mulai perjalanan belajar Anda sekarang!</p>
+                                    <button onclick="navigateTo('courses')" class="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
+                                        Jelajahi Kursus
+                                    </button>
+                                </div>
+                            ` : `
+                                <div class="space-y-4">
+                                    ${AppState.userCourses.map(course => `
+                                        <div class="bg-white rounded-lg shadow p-6 hover:shadow-lg transition cursor-pointer" onclick="navigateTo('learn', {courseId: ${course.id}, moduleId: ${course.modules[0].id}})">
+                                            <div class="flex items-center justify-between mb-4">
+                                                <h3 class="text-xl font-bold">${course.title}</h3>
+                                                <span class="px-3 py-1 bg-blue-100 text-blue-600 rounded-full text-sm">${course.category}</span>
+                                            </div>
+                                            <div class="mb-3">
+                                                <div class="flex justify-between text-sm mb-1">
+                                                    <span class="text-gray-600">Progress</span>
+                                                    <span class="font-semibold text-blue-600">${course.progress}%</span>
+                                                </div>
+                                                <div class="w-full bg-gray-200 rounded-full h-3">
+                                                    <div class="bg-blue-600 h-3 rounded-full transition-all" style="width: ${course.progress}%"></div>
+                                                </div>
+                                            </div>
+                                            <div class="flex items-center justify-between text-sm text-gray-600">
+                                                <span><i class="fas fa-book mr-2"></i>${course.modules.filter(m => m.completed).length}/${course.modules.length} modul selesai</span>
+                                                <button class="text-blue-600 hover:text-blue-700 font-semibold">
+                                                    Lanjutkan <i class="fas fa-arrow-right ml-1"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    `).join('')}
+                                </div>
+                            `}
+                        </div>
+
+                        <div>
+                            <h2 class="text-2xl font-bold mb-6">Menu Cepat</h2>
+                            <div class="space-y-4">
+                                <button onclick="navigateTo('bookSession')" class="w-full bg-white rounded-lg shadow p-6 text-left hover:shadow-lg transition">
+                                    <i class="fas fa-video text-2xl text-blue-600 mb-3"></i>
+                                    <h3 class="font-bold mb-1">Booking Sesi Private</h3>
+                                    <p class="text-sm text-gray-600">Jadwalkan sesi 1-on-1 dengan mentor</p>
+                                </button>
+                                <button onclick="navigateTo('certificates')" class="w-full bg-white rounded-lg shadow p-6 text-left hover:shadow-lg transition">
+                                    <i class="fas fa-certificate text-2xl text-purple-600 mb-3"></i>
+                                    <h3 class="font-bold mb-1">Sertifikat Saya</h3>
+                                    <p class="text-sm text-gray-600">Lihat dan unduh sertifikat</p>
+                                </button>
+                                <button onclick="navigateTo('orders')" class="w-full bg-white rounded-lg shadow p-6 text-left hover:shadow-lg transition">
+                                    <i class="fas fa-receipt text-2xl text-green-600 mb-3"></i>
+                                    <h3 class="font-bold mb-1">Riwayat Pembayaran</h3>
+                                    <p class="text-sm text-gray-600">Lihat invoice dan transaksi</p>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function BookSessionPage() {
+            return `
+                ${Navbar()}
+                <div class="container mx-auto px-4 py-12 max-w-2xl fade-in">
+                    <h1 class="text-3xl font-bold mb-8">Booking Sesi Private</h1>
+                    <div class="bg-white rounded-lg shadow p-8">
+                        <form onsubmit="event.preventDefault(); bookPrivateSession(document.getElementById('sessionDate').value, document.getElementById('sessionTime').value, document.getElementById('sessionTopic').value)">
+                            <div class="mb-6">
+                                <label class="block text-sm font-semibold mb-2">Topik Pembelajaran</label>
+                                <input type="text" id="sessionTopic" required class="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-transparent" placeholder="Contoh: SQL Advanced Query">
+                            </div>
+                            <div class="mb-6">
+                                <label class="block text-sm font-semibold mb-2">Tanggal</label>
+                                <input type="date" id="sessionDate" required class="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-transparent">
+                            </div>
+                            <div class="mb-6">
+                                <label class="block text-sm font-semibold mb-2">Waktu</label>
+                                <select id="sessionTime" required class="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-transparent">
+                                    <option value="">Pilih waktu</option>
+                                    <option value="09:00">09:00 WIB</option>
+                                    <option value="10:00">10:00 WIB</option>
+                                    <option value="11:00">11:00 WIB</option>
+                                    <option value="13:00">13:00 WIB</option>
+                                    <option value="14:00">14:00 WIB</option>
+                                    <option value="15:00">15:00 WIB</option>
+                                    <option value="16:00">16:00 WIB</option>
+                                    <option value="19:00">19:00 WIB</option>
+                                    <option value="20:00">20:00 WIB</option>
+                                </select>
+                            </div>
+                            <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+                                <p class="text-sm text-blue-800">
+                                    <i class="fas fa-info-circle mr-2"></i>
+                                    Link Zoom akan dikirimkan ke email Anda setelah booking dikonfirmasi
+                                </p>
+                            </div>
+                            <button type="submit" class="w-full py-3 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition">
+                                <i class="fas fa-calendar-check mr-2"></i>Booking Sekarang
+                            </button>
+                        </form>
+                    </div>
+
+                    ${AppState.privateSessions.length > 0 ? `
+                        <div class="mt-8">
+                            <h2 class="text-2xl font-bold mb-4">Sesi Terjadwal</h2>
+                            <div class="space-y-4">
+                                ${AppState.privateSessions.map(session => `
+                                    <div class="bg-white rounded-lg shadow p-6">
+                                        <div class="flex items-center justify-between mb-3">
+                                            <h3 class="font-bold text-lg">${session.topic}</h3>
+                                            <span class="px-3 py-1 bg-green-100 text-green-600 rounded-full text-sm">${session.status}</span>
+                                        </div>
+                                        <p class="text-gray-600 mb-3">
+                                            <i class="fas fa-calendar mr-2"></i>${new Date(session.date).toLocaleDateString('id-ID')} • ${session.time}
+                                        </p>
+                                        <a href="${session.zoomLink}" target="_blank" class="inline-block px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
+                                            <i class="fas fa-video mr-2"></i>Join Zoom Meeting
+                                        </a>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+                    ` : ''}
+                </div>
+            `;
+        }
+
+        function CertificatesPage() {
+            return `
+                ${Navbar()}
+                <div class="container mx-auto px-4 py-12 fade-in">
+                    <h1 class="text-3xl font-bold mb-8">Sertifikat Saya</h1>
+                    ${AppState.certificates.length === 0 ? `
+                        <div class="bg-white rounded-lg shadow p-12 text-center">
+                            <i class="fas fa-certificate text-6xl text-gray-300 mb-4"></i>
+                            <h3 class="text-xl font-semibold mb-2">Belum ada sertifikat</h3>
+                            <p class="text-gray-600 mb-6">Selesaikan kursus untuk mendapatkan sertifikat</p>
+                            <button onclick="navigateTo('dashboard')" class="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
+                                Kembali ke Dashboard
+                            </button>
+                        </div>
+                    ` : `
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            ${AppState.certificates.map(cert => `
+                                <div class="bg-white rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition">
+                                    <div class="bg-gradient-to-r from-blue-600 to-purple-600 p-8 text-white text-center">
+                                        <i class="fas fa-certificate text-6xl mb-4 opacity-80"></i>
+                                        <h3 class="text-2xl font-bold mb-2">Certificate of Completion</h3>
+                                        <p class="text-sm opacity-90">This certifies that</p>
+                                    </div>
+                                    <div class="p-6">
+                                        <h2 class="text-2xl font-bold text-center mb-2">${cert.studentName}</h2>
+                                        <p class="text-center text-gray-600 mb-4">has successfully completed</p>
+                                        <h3 class="text-xl font-bold text-center text-blue-600 mb-4">${cert.courseName}</h3>
+                                        <div class="border-t pt-4 space-y-2 text-sm">
+                                            <div class="flex justify-between">
+                                                <span class="text-gray-600">Certificate No:</span>
+                                                <span class="font-mono">${cert.certificateNumber}</span>
+                                            </div>
+                                            <div class="flex justify-between">
+                                                <span class="text-gray-600">Issue Date:</span>
+                                                <span>${new Date(cert.issueDate).toLocaleDateString('id-ID')}</span>
+                                            </div>
+                                            <div class="flex justify-between">
+                                                <span class="text-gray-600">Verification Hash:</span>
+                                                <span class="font-mono text-xs">${cert.hash}</span>
+                                            </div>
+                                        </div>
+                                        <div class="mt-6 flex gap-3">
+                                            <button class="flex-1 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
+                                                <i class="fas fa-download mr-2"></i>Download PDF
+                                            </button>
+                                            <button class="flex-1 py-2 border border-blue-600 text-blue-600 rounded-lg hover:bg-blue-50 transition">
+                                                <i class="fas fa-share-alt mr-2"></i>Share
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    `}
+                </div>
+            `;
+        }
+
+        function OrdersPage() {
+            return `
+                ${Navbar()}
+                <div class="container mx-auto px-4 py-12 fade-in">
+                    <h1 class="text-3xl font-bold mb-8">Riwayat Pembayaran</h1>
+                    ${AppState.orders.length === 0 ? `
+                        <div class="bg-white rounded-lg shadow p-12 text-center">
+                            <i class="fas fa-receipt text-6xl text-gray-300 mb-4"></i>
+                            <h3 class="text-xl font-semibold mb-2">Belum ada transaksi</h3>
+                            <p class="text-gray-600">Riwayat pembayaran Anda akan muncul di sini</p>
+                        </div>
+                    ` : `
+                        <div class="bg-white rounded-lg shadow overflow-hidden">
+                            <table class="w-full">
+                                <thead class="bg-gray-50">
+                                    <tr>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Order ID</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Item</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Tanggal</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Metode</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Amount</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-gray-200">
+                                    ${AppState.orders.map(order => `
+                                        <tr>
+                                            <td class="px-6 py-4 text-sm font-mono">#${order.id}</td>
+                                            <td class="px-6 py-4">${order.item.title || order.item.name}</td>
+                                            <td class="px-6 py-4 text-sm">${new Date(order.date).toLocaleDateString('id-ID')}</td>
+                                            <td class="px-6 py-4 text-sm uppercase">${order.method}</td>
+                                            <td class="px-6 py-4 font-semibold">Rp ${order.item.price.toLocaleString('id-ID')}</td>
+                                            <td class="px-6 py-4">
+                                                <span class="px-3 py-1 ${order.status === 'paid' ? 'bg-green-100 text-green-600' : 'bg-yellow-100 text-yellow-600'} rounded-full text-sm">
+                                                    ${order.status === 'paid' ? 'Paid' : 'Pending'}
+                                                </span>
+                                            </td>
+                                            <td class="px-6 py-4">
+                                                <button class="text-blue-600 hover:text-blue-700">
+                                                    <i class="fas fa-download mr-1"></i>Invoice
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    `).join('')}
+                                </tbody>
+                            </table>
+                        </div>
+                    `}
+                </div>
+            `;
+        }
+
+        function LoginPage() {
+            return `
+                ${Navbar()}
+                <div class="min-h-screen bg-gray-50 flex items-center justify-center py-12 px-4 fade-in">
+                    <div class="max-w-md w-full">
+                        <div class="text-center mb-8">
+                            <i class="fas fa-graduation-cap text-5xl text-blue-600 mb-4"></i>
+                            <h2 class="text-3xl font-bold">Masuk ke DataLearn</h2>
+                            <p class="text-gray-600 mt-2">Lanjutkan perjalanan belajar Anda</p>
+                        </div>
+                        <div class="bg-white rounded-lg shadow-lg p-8">
+                            <form onsubmit="event.preventDefault(); login(document.getElementById('email').value, document.getElementById('password').value)">
+                                <div class="mb-4">
+                                    <label class="block text-sm font-semibold mb-2">Email</label>
+                                    <input type="email" id="email" required class="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-transparent" placeholder="email@example.com">
+                                </div>
+                                <div class="mb-6">
+                                    <label class="block text-sm font-semibold mb-2">Password</label>
+                                    <input type="password" id="password" required class="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-transparent" placeholder="••••••••">
+                                </div>
+                                <button type="submit" class="w-full py-3 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition mb-4">
+                                    Masuk
+                                </button>
+                                <div class="text-center">
+                                    <p class="text-sm text-gray-600">
+                                        Belum punya akun? 
+                                        <a onclick="navigateTo('register')" class="text-blue-600 hover:text-blue-700 cursor-pointer font-semibold">Daftar sekarang</a>
+                                    </p>
+                                </div>
+                            </form>
+                            <div class="mt-6 border-t pt-6">
+                                <p class="text-center text-sm text-gray-600 mb-3">Atau masuk dengan</p>
+                                <div class="space-y-3">
+                                    <button class="w-full py-3 border rounded-lg hover:bg-gray-50 transition flex items-center justify-center">
+                                        <i class="fab fa-google text-red-600 mr-2"></i>
+                                        Google
+                                    </button>
+                                    <button class="w-full py-3 border rounded-lg hover:bg-gray-50 transition flex items-center justify-center">
+                                        <i class="fab fa-facebook text-blue-600 mr-2"></i>
+                                        Facebook
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function RegisterPage() {
+            return `
+                ${Navbar()}
+                <div class="min-h-screen bg-gray-50 flex items-center justify-center py-12 px-4 fade-in">
+                    <div class="max-w-md w-full">
+                        <div class="text-center mb-8">
+                            <i class="fas fa-graduation-cap text-5xl text-blue-600 mb-4"></i>
+                            <h2 class="text-3xl font-bold">Daftar di DataLearn</h2>
+                            <p class="text-gray-600 mt-2">Mulai perjalanan belajar Anda hari ini</p>
+                        </div>
+                        <div class="bg-white rounded-lg shadow-lg p-8">
+                            <form onsubmit="event.preventDefault(); register(document.getElementById('regEmail').value, document.getElementById('regPassword').value, document.getElementById('regName').value)">
+                                <div class="mb-4">
+                                    <label class="block text-sm font-semibold mb-2">Nama Lengkap</label>
+                                    <input type="text" id="regName" required class="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-transparent" placeholder="John Doe">
+                                </div>
+                                <div class="mb-4">
+                                    <label class="block text-sm font-semibold mb-2">Email</label>
+                                    <input type="email" id="regEmail" required class="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-transparent" placeholder="email@example.com">
+                                </div>
+                                <div class="mb-6">
+                                    <label class="block text-sm font-semibold mb-2">Password</label>
+                                    <input type="password" id="regPassword" required minlength="6" class="w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-transparent" placeholder="••••••••">
+                                    <p class="text-xs text-gray-500 mt-1">Minimal 6 karakter</p>
+                                </div>
+                                <button type="submit" class="w-full py-3 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition mb-4">
+                                    Daftar
+                                </button>
+                                <div class="text-center">
+                                    <p class="text-sm text-gray-600">
+                                        Sudah punya akun? 
+                                        <a onclick="navigateTo('login')" class="text-blue-600 hover:text-blue-700 cursor-pointer font-semibold">Masuk</a>
+                                    </p>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function AdminDashboard() {
+            return `
+                ${Navbar()}
+                <div class="container mx-auto px-4 py-12 fade-in">
+                    <h1 class="text-4xl font-bold mb-8">Admin Dashboard</h1>
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+                        <div class="bg-white rounded-lg shadow p-6">
+                            <p class="text-gray-600 mb-1">Total Pengguna</p>
+                            <p class="text-3xl font-bold text-blue-600">5,234</p>
+                        </div>
+                        <div class="bg-white rounded-lg shadow p-6">
+                            <p class="text-gray-600 mb-1">Total Kursus</p>
+                            <p class="text-3xl font-bold text-green-600">${AppState.courses.length}</p>
+                        </div>
+                        <div class="bg-white rounded-lg shadow p-6">
+                            <p class="text-gray-600 mb-1">Pendapatan Bulan Ini</p>
+                            <p class="text-3xl font-bold text-purple-600">Rp 45.5M</p>
+                        </div>
+                        <div class="bg-white rounded-lg shadow p-6">
+                            <p class="text-gray-600 mb-1">Sesi Private</p>
+                            <p class="text-3xl font-bold text-orange-600">128</p>
+                        </div>
+                    </div>
+                    <div class="bg-white rounded-lg shadow p-6">
+                        <h2 class="text-2xl font-bold mb-4">Manajemen Kursus</h2>
+                        <button class="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition mb-4">
+                            <i class="fas fa-plus mr-2"></i>Tambah Kursus Baru
+                        </button>
+                        <div class="overflow-x-auto">
+                            <table class="w-full">
+                                <thead class="bg-gray-50">
+                                    <tr>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Kursus</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Siswa</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Rating</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Harga</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-gray-200">
+                                    ${AppState.courses.map(course => `
+                                        <tr>
+                                            <td class="px-6 py-4">${course.title}</td>
+                                            <td class="px-6 py-4">${course.students}</td>
+                                            <td class="px-6 py-4">${course.rating}</td>
+                                            <td class="px-6 py-4">Rp ${course.price.toLocaleString('id-ID')}</td>
+                                            <td class="px-6 py-4">
+                                                <button class="text-blue-600 hover:text-blue-700 mr-3">Edit</button>
+                                                <button class="text-red-600 hover:text-red-700">Delete</button>
+                                            </td>
+                                        </tr>
+                                    `).join('')}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Main render function
+        function render() {
+            const app = document.getElementById('app');
+            let content = '';
+
+            switch(AppState.currentPage) {
+                case 'home':
+                    content = HomePage();
+                    break;
+                case 'courses':
+                    content = CoursesPage();
+                    break;
+                case 'courseDetail':
+                    content = CourseDetailPage(AppState.pageData);
+                    break;
+                case 'learn':
+                    content = LearningPage(AppState.pageData);
+                    break;
+                case 'pricing':
+                    content = PricingPage();
+                    break;
+                case 'checkout':
+                    content = CheckoutPage(AppState.pageData);
+                    break;
+                case 'dashboard':
+                    content = DashboardPage();
+                    break;
+                case 'bookSession':
+                    content = BookSessionPage();
+                    break;
+                case 'certificates':
+                    content = CertificatesPage();
+                    break;
+                case 'orders':
+                    content = OrdersPage();
+                    break;
+                case 'login':
+                    content = LoginPage();
+                    break;
+                case 'register':
+                    content = RegisterPage();
+                    break;
+                case 'admin':
+                    content = AdminDashboard();
+                    break;
+                default:
+                    content = HomePage();
+            }
+
+            app.innerHTML = content;
+        }
+
+        // Initialize app
+        initDemoData();
+        render();
+    </script>
+</body>
+</html>

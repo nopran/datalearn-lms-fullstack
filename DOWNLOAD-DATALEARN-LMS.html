@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Download DataLearn LMS - Full Stack Project</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 40px;
+            text-align: center;
+        }
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+        .content {
+            padding: 40px;
+        }
+        .alert {
+            background: #fef3c7;
+            border-left: 4px solid #f59e0b;
+            padding: 15px;
+            margin-bottom: 30px;
+            border-radius: 5px;
+        }
+        .alert-blue {
+            background: #dbeafe;
+            border-left: 4px solid #3b82f6;
+        }
+        .section {
+            margin-bottom: 40px;
+        }
+        .section h2 {
+            color: #1f2937;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .section h2::before {
+            content: '📦';
+            font-size: 1.2em;
+        }
+        .download-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+        .download-card {
+            border: 2px solid #e5e7eb;
+            border-radius: 10px;
+            padding: 20px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        .download-card:hover {
+            border-color: #667eea;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.2);
+        }
+        .download-card h3 {
+            color: #374151;
+            margin-bottom: 8px;
+            font-size: 1.1em;
+        }
+        .download-card p {
+            color: #6b7280;
+            font-size: 0.9em;
+            margin-bottom: 15px;
+        }
+        .download-btn {
+            display: inline-block;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            text-align: center;
+            width: 100%;
+        }
+        .download-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+        .steps {
+            background: #f9fafb;
+            border-radius: 10px;
+            padding: 25px;
+            margin-top: 20px;
+        }
+        .steps ol {
+            padding-left: 20px;
+        }
+        .steps li {
+            margin-bottom: 15px;
+            line-height: 1.6;
+            color: #374151;
+        }
+        .steps li strong {
+            color: #1f2937;
+        }
+        .tech-stack {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        .tech-badge {
+            background: #f3f4f6;
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            color: #374151;
+        }
+        .footer {
+            background: #f9fafb;
+            padding: 30px;
+            text-align: center;
+            color: #6b7280;
+        }
+        code {
+            background: #f3f4f6;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            color: #be123c;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎓 DataLearn LMS</h1>
+            <p>Full Stack Learning Management System</p>
+            <p style="margin-top: 10px; font-size: 0.9em;">Node.js + Express + PostgreSQL + Frontend Modern</p>
+        </div>
+
+        <div class="content">
+            <div class="alert alert-blue">
+                <strong>📥 Cara Download:</strong> Klik tombol "Download" di bawah. File akan otomatis terdownload. Jika tidak, klik kanan → "Save Link As".
+            </div>
+
+            <div class="alert">
+                <strong>⚠️ PENTING:</strong> Setelah download, buka file <code>START_HERE.md</code> terlebih dahulu untuk panduan lengkap!
+            </div>
+
+            <!-- Main Download Section -->
+            <div class="section">
+                <h2>Download Project Lengkap</h2>
+                <div class="download-grid">
+                    <div class="download-card">
+                        <h3>📦 Full Project (ZIP)</h3>
+                        <p>Semua file dalam satu archive. Ukuran: ~50KB (sebelum npm install)</p>
+                        <a href="datalearn-lms.tar.gz" download class="download-btn">
+                            ⬇️ Download ZIP
+                        </a>
+                    </div>
+                    
+                    <div class="download-card">
+                        <h3>📖 Frontend Only</h3>
+                        <p>File HTML aplikasi web. Ukuran: ~80KB</p>
+                        <a href="datalearn-lms-fullstack/frontend/index.html" download class="download-btn">
+                            ⬇️ Download Frontend
+                        </a>
+                    </div>
+
+                    <div class="download-card">
+                        <h3>🗄️ Database Schema</h3>
+                        <p>PostgreSQL schema SQL. Ukuran: ~20KB</p>
+                        <a href="datalearn-lms-fullstack/database/schema.sql" download class="download-btn">
+                            ⬇️ Download Schema
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Documentation Section -->
+            <div class="section">
+                <h2>📚 Dokumentasi</h2>
+                <div class="download-grid">
+                    <div class="download-card">
+                        <h3>🚀 START HERE</h3>
+                        <p>Panduan awal - baca ini dulu!</p>
+                        <a href="datalearn-lms-fullstack/START_HERE.md" download class="download-btn">
+                            📖 Baca
+                        </a>
+                    </div>
+
+                    <div class="download-card">
+                        <h3>🛠️ Setup Guide</h3>
+                        <p>Tutorial lengkap instalasi</p>
+                        <a href="datalearn-lms-fullstack/SETUP.md" download class="download-btn">
+                            📖 Baca
+                        </a>
+                    </div>
+
+                    <div class="download-card">
+                        <h3>📋 File Checklist</h3>
+                        <p>Cek kelengkapan file</p>
+                        <a href="datalearn-lms-fullstack/FILE_CHECKLIST.md" download class="download-btn">
+                            📖 Baca
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Start Guide -->
+            <div class="section">
+                <h2>⚡ Quick Start</h2>
+                <div class="steps">
+                    <ol>
+                        <li><strong>Download & Extract:</strong> Download file ZIP di atas, extract ke folder project Anda</li>
+                        <li><strong>Install Software:</strong> Install Node.js 16+ dan PostgreSQL 14+</li>
+                        <li><strong>Setup Database:</strong>
+                            <br><code>psql -U postgres</code>
+                            <br><code>CREATE DATABASE datalearn_lms;</code>
+                            <br><code>psql -U postgres -d datalearn_lms -f database/schema.sql</code>
+                        </li>
+                        <li><strong>Setup Backend:</strong>
+                            <br><code>cd backend && npm install</code>
+                            <br><code>cp .env.example .env</code>
+                            <br>(Edit .env, isi DB_PASSWORD dan JWT_SECRET)
+                            <br><code>npm run dev</code>
+                        </li>
+                        <li><strong>Buka Frontend:</strong> Buka file <code>frontend/index.html</code> di browser</li>
+                        <li><strong>Login:</strong> Email: <code>admin@datalearn.com</code> Password: <code>admin123</code></li>
+                    </ol>
+                </div>
+            </div>
+
+            <!-- Features Section -->
+            <div class="section">
+                <h2>✨ Fitur Lengkap</h2>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 15px;">
+                    <div>
+                        <strong>Untuk Siswa:</strong>
+                        <ul style="margin-left: 20px; margin-top: 10px; line-height: 1.8;">
+                            <li>Register & Login</li>
+                            <li>Browse & Enroll Courses</li>
+                            <li>Video Learning & Quiz</li>
+                            <li>Progress Tracking</li>
+                            <li>Digital Certificates</li>
+                            <li>Private Sessions</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <strong>Untuk Admin:</strong>
+                        <ul style="margin-left: 20px; margin-top: 10px; line-height: 1.8;">
+                            <li>Dashboard Analytics</li>
+                            <li>Manage Courses & Users</li>
+                            <li>Create Modules & Quiz</li>
+                            <li>Payment Management</li>
+                            <li>Issue Certificates</li>
+                            <li>View Reports</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tech Stack -->
+            <div class="section">
+                <h2>🛠️ Tech Stack</h2>
+                <div class="tech-stack">
+                    <span class="tech-badge">Node.js 16+</span>
+                    <span class="tech-badge">Express.js</span>
+                    <span class="tech-badge">PostgreSQL 14+</span>
+                    <span class="tech-badge">Sequelize ORM</span>
+                    <span class="tech-badge">JWT Auth</span>
+                    <span class="tech-badge">Tailwind CSS</span>
+                    <span class="tech-badge">Midtrans Payment</span>
+                    <span class="tech-badge">Nodemailer</span>
+                </div>
+            </div>
+
+            <!-- Troubleshooting -->
+            <div class="section">
+                <h2>🐛 Troubleshooting</h2>
+                <div class="steps">
+                    <strong>File tidak bisa didownload?</strong>
+                    <p style="margin: 10px 0;">→ Klik kanan pada tombol Download → "Save Link As"</p>
+                    
+                    <strong>File ZIP corrupt?</strong>
+                    <p style="margin: 10px 0;">→ Download ulang, pastikan koneksi internet stabil</p>
+                    
+                    <strong>Cara extract file .tar.gz?</strong>
+                    <p style="margin: 10px 0;">
+                        Windows: Gunakan 7-Zip atau WinRAR<br>
+                        Mac/Linux: <code>tar -xzf datalearn-lms.tar.gz</code>
+                    </p>
+
+                    <strong>Butuh bantuan lebih?</strong>
+                    <p style="margin: 10px 0;">→ Baca file <code>SETUP.md</code> untuk panduan lengkap troubleshooting</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="footer">
+            <p><strong>DataLearn LMS</strong> v1.0.0</p>
+            <p style="margin-top: 10px;">Dibuat dengan ❤️ untuk pembelajaran</p>
+            <p style="margin-top: 10px; font-size: 0.9em;">
+                📧 Support: Baca dokumentasi di folder <code>docs/</code>
+            </p>
+        </div>
+    </div>
+
+    <script>
+        // Add click tracking for downloads
+        document.querySelectorAll('.download-btn').forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                const filename = this.getAttribute('href');
+                console.log('Downloading:', filename);
+                
+                // Show alert after 500ms
+                setTimeout(() => {
+                    if (this.textContent.includes('ZIP')) {
+                        alert('✅ Download dimulai!\n\nSetelah download:\n1. Extract file ZIP\n2. Buka START_HERE.md\n3. Ikuti panduan setup');
+                    }
+                }, 500);
+            });
+        });
+    </script>
+</body>
+</html>
